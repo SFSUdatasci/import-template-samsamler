@@ -17,11 +17,13 @@ I will use my data to do statistical analysis of the YM, average width, and aver
 
 ## Data:
 
-I put my data in the raw folder, as it is just raw data with no statistical analysis done yet or data cleaning.
+I put my data in the raw folder, as it is just raw data with no statistical analysis done yet or data cleaning
 
 ```{r}
-install.packages('tidyverse')
-TendonData_YM_H_W
+library(here)
+library(readr)
+my_data <- read_csv(here('data','raw','TendonData.YM.H.W.csv'))
+my_data
 ```
 
 ## Analysis:
