@@ -1,0 +1,42 @@
+---
+title: "a03"
+author: "Sam Samler"
+date: "`r Sys.Date()`"
+format: html
+---
+
+# Data Analysis of Alaska Commercial Fishing from 1886-1997
+
+## Loading Data Libraries
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+
+## Analysis Code of Data
+
+```{r}
+#Read data into R 
+catch_original <- read_csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1") 
+
+#Finding mean catch per region:
+
+mean_region <- catch_original %>% #Create new variable 'mean region' as catch original, starting new pipline 
+  select(-All, -notesRegCode) %>% #Then filter data to get rid of all and notes section
+  mutate(Chinook = if_else(Chinook =='I', '1', Chinook)) %>% #Mutate Chinook values so that the letter I appears as the number 1
+  mutate(Chinook = as.numeric(Chinook)) %>% #Makes the Chinook column numeric 
+  pivot_longer(-c(Region, Year), #Pivot the datatable longer and keeping year and region the same 
+               names_to = "species", #renames all columns with species name to just species 
+               values_to ="catch") %>% #catch numbers in new column called catch
+  mutate(catch = catch*1000) %>% #Change the value of catch to a mathmatical arrangement 
+  group_by(Region) %>% #Grabbing region from datatable 
+  summarize(mean_catch = mean(catch)) %>% #New variable mean catch is the mean of the catch data 
+  arrange(desc(mean_catch)) #Arrange from most to least 
+head(mean_region) #Display first few calculations of new table 
+```
+
+## Summary of Data
+
+After the filtering of the data, we are able to see how many fish were caught in each region of the Alaska commercial fishing area between the years 1886-1997. This was done by coding through R Studio and cleaned up with tidy data techniques. The most fish were caught in region SSE, totaling over 3 million different types of salmon caught in that region.
