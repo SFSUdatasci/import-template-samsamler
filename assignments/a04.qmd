@@ -65,15 +65,42 @@ birds_left <- bird_subset %>%
 ```
 
 ## Inner Join
+
 ```{r}
 birds_inner <- bird_subset %>% 
   inner_join(y = taxalist, by = 'species_id')
 ```
 
-## Inner Left Join 
+## Inner Left Join
+
 ```{r}
 birds_inner_left <- bird_subset %>% 
   left_join(y= taxalist, by = 'species_id')
 ```
 
-# Wrange and Joining 
+# Wrangle and Joining
+```{r}
+bird_observations <- bird_observations %>% 
+  rename(bird_obs_notes = notes)
+```
+
+## Full Join
+```{r}
+bird_obs_subset <- bird_observations %>% 
+  full_join(y= taxalist, by = "species_id") %>% 
+  full_join(y= sites, by ="site_id") %>% 
+  full_join(y=surveys, by = c('site_id','survey_id')) %>% 
+  select(survey_date, common_name, park_name, bird_count, observer)
+```
+
+```{r}
+unique(bird_obs_subset$observer)
+```
+```{r}
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(observer = if_else(condition = observer == 'Josh Burns',
+         true = 'J. Burns',
+         false = observer))
+unique(bird_obs_subset$observer)
+```
+
