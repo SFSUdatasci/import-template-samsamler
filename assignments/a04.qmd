@@ -1,0 +1,159 @@
+---
+title: "a04- R Practice: Tidy Data and Joins"
+author: 'Sam Samler'
+date: 'March 09, 2026'
+format: html
+---
+
+# Entering Libraries Needed
+
+```{r}
+library(readr)
+library(dplyr)
+library(here)
+library(lubridate)
+```
+
+# Entering Data
+
+```{r}
+# read in data from the data directory after manually downloading data 
+bird_observations <- read_csv('../data/processed/bird_observations.csv')
+sites <- read_csv('../data/processed/sites.csv')
+surveys <- read_csv('../data/processed/surveys.csv')
+taxalist <- read_csv('../data/processed/taxalist.csv')
+
+```
+
+# Viewing the Data
+
+```{r}
+dim(bird_observations)
+```
+
+```{r}
+head(bird_observations)
+```
+
+```{r}
+glimpse(bird_observations)
+```
+
+```{r}
+summary(bird_observations)
+```
+
+```{r}
+names(bird_observations)
+```
+
+```{r}
+unique(bird_observations$species_id)
+```
+
+# Joins/Merging
+
+## Left Join
+
+```{r}
+bird_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO","RWBL")) %>% 
+  filter(site_id %in% c("LI-W","NU-C"))
+
+birds_left <- bird_subset %>% 
+  left_join(y= sites, by= 'site_id')
+```
+
+## Inner Join
+
+```{r}
+birds_inner <- bird_subset %>% 
+  inner_join(y = taxalist, by = 'species_id')
+```
+
+## Inner Left Join
+
+```{r}
+birds_inner_left <- bird_subset %>% 
+  left_join(y= taxalist, by = 'species_id')
+```
+
+# Wrangle and Joining
+
+## Full Join
+
+```{r}
+bird_obs_subset <- bird_observations %>% 
+  full_join(y= taxalist, by = "species_id") %>% 
+  full_join(y= sites, by ="site_id") %>% 
+  full_join(y=surveys, by = c('site_id','survey_id')) %>% 
+  select(survey_date, common_name, park_name, bird_count, observer)
+```
+
+```{r}
+unique(bird_obs_subset$observer)
+```
+
+```{r}
+bird_obs_subset <- bird_obs_subset %>% 
+  mutate(observer = if_else(condition = observer == 'Josh Burns',
+         true = 'J. Burns',
+         false = observer))
+unique(bird_obs_subset$observer)
+```
+
+# Assignment a04
+
+## Introduction
+
+This data set, loaded in from the practice activity above is a series of observation data from Arizona State University on bird observations in the Phoenix metropolitan area. The data sets were combined in the above activity to give a singular data set called bird_obs_subset, containing the survey date, common name, park name, bird count, and the observer. We will manipulate this data subset to get information on the month, total bird count, and the park in which the data was collected for the following assignment. \## Entering Libraries
+
+```{r}
+library(dplyr)
+library(lubridate)
+```
+
+## 1.
+
+```{r}
+glimpse(bird_obs_subset) #viewing columns to remind myself of the column names 
+```
+
+```{r}
+bird_obs_subset <- bird_obs_subset %>% # Refers to bird_obs_subset datatable
+  mutate(survey_month =factor(month(survey_date))) #mutates survey_date to factor out the month as a new column name 
+```
+
+## 2.
+
+```{r}
+bird_obs_subset <- bird_obs_subset %>%
+  mutate(
+    survey_month = factor(month(survey_date))
+  ) %>% # Same code as above
+  relocate(survey_month, .after = survey_date) # Moves survey month after survey date in bird_obs_subset table 
+head(bird_obs_subset)
+```
+
+## 3.
+
+```{r}
+bird_obs_subset <- bird_obs_subset %>% 
+  filter(park_name %in% c('Lindo','Orme','Palomino','Sonrisa')) #filtering the dataset by only looking at these specific parks 
+head(bird_obs_subset)
+```
+
+## 4.
+
+```{r}
+bird_obs_summary <- bird_obs_subset %>% #create new variable to view data
+  group_by(park_name, survey_month) %>% #grouping by park name and month of survey 
+  summarize(birds_obs = sum(bird_count)) #summarizing by total bird counts in a specific month per park 
+bird_obs_summary #viewing the data 
+```
+
+## 5.
+
+### Summary:
+
+The final dataframe shows the park name, the month, and the total birds counted in that specific month in that specific park. This gives data set is informative because it gives how many birds are in a particular area during a particular time of year. For example, in January in Lindo park, there were only 394 bird observations, but in September, the number grew to 4,688 bird observations, which can indicate migration patterns of birds in the area. I would improve the data wrangling process by dropping values that contain N/As because in my final data set I have a few.
