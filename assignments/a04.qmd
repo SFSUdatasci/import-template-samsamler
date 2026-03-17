@@ -1,0 +1,79 @@
+---
+title: "a04- R Practice: Tidy Data and Joins"
+author: 'Sam Samler'
+date: 'March 09, 2026'
+format: html
+---
+
+# Entering Libraries Needed
+
+```{r}
+library(readr)
+library(dplyr)
+library(here)
+library(lubridate)
+```
+
+# Entering Data
+
+```{r}
+# read in data from the data directory after manually downloading data 
+bird_observations <- read_csv('../data/processed/bird_observations.csv')
+sites <- read_csv('../data/processed/sites.csv')
+surveys <- read_csv('../data/processed/surveys.csv')
+taxalist <- read_csv('../data/processed/taxalist.csv')
+
+```
+
+# Viewing the Data
+
+```{r}
+dim(bird_observations)
+```
+
+```{r}
+head(bird_observations)
+```
+
+```{r}
+glimpse(bird_observations)
+```
+
+```{r}
+summary(bird_observations)
+```
+
+```{r}
+names(bird_observations)
+```
+
+```{r}
+unique(bird_observations$species_id)
+```
+
+# Joins/Merging
+
+## Left Join
+
+```{r}
+bird_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO","RWBL")) %>% 
+  filter(site_id %in% c("LI-W","NU-C"))
+
+birds_left <- bird_subset %>% 
+  left_join(y= sites, by= 'site_id')
+```
+
+## Inner Join
+```{r}
+birds_inner <- bird_subset %>% 
+  inner_join(y = taxalist, by = 'species_id')
+```
+
+## Inner Left Join 
+```{r}
+birds_inner_left <- bird_subset %>% 
+  left_join(y= taxalist, by = 'species_id')
+```
+
+# Wrange and Joining 
