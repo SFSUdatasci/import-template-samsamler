@@ -1,0 +1,155 @@
+---
+title: "a05"
+format: html
+author: "Sam Samler"
+date: "04/01/2026"
+---
+
+# Introduction
+
+This data set is sourced from University of California, Davis to study the socio-ecological trends around restoration lands. This data set explores the amount of visits restoration sites receive in and around the Bay Area as well as the visitor type recorded at the restoration site. The purpose of this study was to evaluate how humans respond to restored ecological sites in terms of their activity at a particular restored site. This data was collected by monitoring boat and car activity around restoration sites to get daily visit counts during daylight hours.
+
+Below, I will clean and analyze the data to provide well organized charts and site mapping for the restoration areas based on the activity around the particular site based on my personal preferences for plotting data. \# Entering Code
+
+## Installing Packages/Loading Libraries
+
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(forcats) # makes working with factors easier
+library(ggplot2)
+library(leaflet) # interactive maps
+library(DT) # interactive tables
+library(scales) # scale functions for visualization
+library(janitor) # expedite cleaning and exploring data
+library(viridis) # colorblind friendly color palette
+```
+
+## Entering Data
+
+```{r}
+delta_visits_raw <- read_csv('../data/processed/socioecological_monitoring_data.csv')
+```
+
+## Exploring Data
+
+```{r}
+colnames(delta_visits_raw)
+```
+
+```{r}
+glimpse(delta_visits_raw)
+```
+
+```{r}
+range(delta_visits_raw$Date)
+```
+
+```{r}
+unique(delta_visits_raw$Time_of_Day)
+```
+
+## Cleaning Data
+
+### Cleaning Column Names
+
+```{r}
+delta_visits <- delta_visits_raw %>% 
+  janitor::clean_names() ## Making all names lowercase 
+```
+
+```{r}
+colnames(delta_visits)
+```
+
+### Pivoting Longer for ggplot2
+
+```{r}
+visits_long <- delta_visits %>% 
+  pivot_longer(cols = c(sm_boat, med_boat, lrg_boat, bank_angler, scientist, cars),
+               names_to = 'visitor_type',
+               values_to = 'quanitiy') %>% 
+  rename(restore_loc = eco_restore_approximate_location) %>% 
+  select(-notes)
+
+head(visits_long)
+```
+
+### Calculating Daily Visits
+
+```{r}
+daily_visits_loc <- visits_long %>% 
+  group_by(restore_loc, date, visitor_type) %>% 
+  summarise(daily_visits = sum(quanitiy))
+head(daily_visits_loc)
+  
+```
+
+## Plot and Map Selection
+
+### Plot Selection
+
+```{r}
+## Summarize total visits by restoration location 
+daily_visits_totals <- daily_visits_loc %>% ## Then 
+    group_by(restore_loc) %>% ## group by restoration location, then 
+    mutate(n = sum(daily_visits)) %>% #create new column that contains total visits per location 
+    ungroup() %>% ## remove grouping structure 
+    mutate(restore_loc = fct_reorder(restore_loc, desc(n))) ## arrange total visits in descending order per restoration location
+ 
+## Create faceted bar plot           
+facet_plot <- ggplot(data = daily_visits_totals, ## Setting dataset 
+       aes(x = visitor_type, y = daily_visits, ## Setting x and y 
+           fill = visitor_type)) + 
+    geom_col() + # Create bar chart 
+    facet_wrap(~restore_loc, #Create separate pannels for resortation loaction 
+               scales = "free_y", ## Each facet gets its own y-axis 
+               ncol = 5, # number of columns 
+               nrow = 2) + # Number of rows 
+    scale_fill_viridis_d() + # Viridis for color visibility 
+    labs(x = "Type of visitor", #Labeling x 
+         y = "Number of Visits", #labeling 7
+         title = "Total Number of Visits to Delta Restoration Areas", #setting titile 
+         subtitle = "Sum of all visits during study period") + #subtitle 
+    theme_bw() + 
+    theme(legend.position = "bottom", #legend at bottom of plot 
+          axis.ticks.x = element_blank(), #removing ticks 
+          axis.text.x = element_blank()) #removing labels 
+
+#Displaying plot 
+facet_plot
+```
+
+### Map Selection
+
+```{r}
+## Creating new variable 
+locations <- visits_long %>%
+    distinct(restore_loc, .keep_all = TRUE) %>% # keeping only distinct restoration locations 
+    select(restore_loc, latitude, longitude) #columns relevany for mapping 
+
+#Creating Interactive Map 
+leaflet(locations) %>%
+    addProviderTiles(providers$Esri.WorldImagery) %>% #Base map, satellite 
+    addProviderTiles(providers$CartoDB.PositronOnlyLabels) %>% #Overlay labels
+    addCircleMarkers( #adding markers per restoration locations 
+        lng = ~ longitude, # per longitude and 
+        lat = ~ latitude, #per latitude 
+        popup = ~ restore_loc, #showing names when location is clicked 
+        radius = 5,#size of marker 
+        # set fill properties
+        fillColor = "salmon", #color of marker 
+        fillOpacity = 1, #transparency of marker 
+        # set stroke properties
+        stroke = TRUE,
+        weight = 0.5,
+        color = "white",
+        opacity = 1)
+```
+
+# Discussion
+
+Based on the charts graphed above as well as the map generated using the longitudinal and latitudinal coordinates from the data set, it appears that most individuals are accessing the restoration sites via boat. The size and type of boat varies, however, it appears that is the main method of accessing the site. The North Delta is one of the only sites accessed mostly by car as well as Sherman Island, which makes sense as they are close to land compared to other sites on the map. Medium sized boats seems to be the main method of transportation to the restoration sites.
+
+The purpose of the chart I chose was to display the type of visitor per site and how many visits each visitor type logged. I chose to do separate bar charts because I believe it is easier to read the graphs this was as opposed to them being smashed on one chart. I chose the satellite map, mostly because I thought it was the coolest option.
