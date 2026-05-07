@@ -1,0 +1,28 @@
+---
+title: "a02"
+format: html
+---
+
+Sam Samler_02/23/2026_Tidy Data Assignment
+
+## Introduction:
+
+My data is from a previous Master's student in Dr. Ichimura's lab group.
+
+Date Downloaded: Download source:
+
+I will use my data to analyze idk
+
+## Data:
+
+I put my data in the raw or processed folder (whatever I put it in)
+
+Read in data here using code
+
+## Analysis:
+
+My data is tidy/not tidy because...
+
+The primary key is...
+
+I have a foregin key that connects...

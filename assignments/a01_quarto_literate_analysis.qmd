@@ -24,6 +24,8 @@ The seawater chemistry dataset used here is `BGchem2008data.csv` (downloaded pre
 
 You will explore the nitrogen to phosphate ratio, which indicates the health of the ocean ecosystem. <https://beal-agulhas.earth.miami.edu/teaching/courses/lecture-five/index.html>
 
+The Redfield Ratio is the ideal ratio of Nitrogen:Phosphate within an ocean's ecosystem for phytoplankton to flourish. Phytoplankon are important to maintaining the balance of a particular ocean's ecosystem. If the ratio deviates from the ideal 16:1, it indicates that there are changes in the ocean's regular functioning from upwelling, climate change/pollution, or unusual ocean currents. The data used for this project is from Arctic oceans, and can be compared to the ideal Redfield ratio. This can indicate if the Arctic ocean is experiencing changes in its ecosystem from either internal or external oceanic changes or events.
+
 ## Setup
 
 Best practice: put all `library()` calls in one chunk near the top so collaborators can see what packages are required.
@@ -40,7 +42,7 @@ Quarto runs R in the same way as a script: objects only exist after the chunks t
 Using `here()` is a convenient way to build paths relative to your project root (e.g., your `.qmd` might live in `scripts/` while data lives in `data/`).
 
 ```{r}
-bg_chem <- read_csv(here::here("data", "BGchem2008data.csv"))
+bg_chem <- read_csv(here::here("data/raw", "BGchem2008data.csv"))
 ```
 
 (Optional) Quick peek at the data:
@@ -92,6 +94,8 @@ plot(
   main = "Ocean water samples: total N vs P"
 )
 ```
+
+This plot is a visual representation of the Redfield ratio in the Arctic Ocean. Calculated above was the Redfield ratio of 6:1 of N:P. This number is an average of all the data and should be interpreted as such. The plot tells a different story. It appears that with increasing ratio amounts of phosphate, there is also an increase in nitrogen. This follows a linear trend with the exceptions of a few outliers appearing at one on the phospate axis. The linear trend shows that when the amount of nitrogen approaches 16, the amount of phosphate is almost 2. This is significantly deviated from the ideal ration of 16:1, and poses that at this point the ratio is closer to 8:1. It can be interpreted from the plot that the Arctic ocean is lacking a source of nitrogen from some ecological, environmental, or climate impact.
 
 # Conclusion
 
